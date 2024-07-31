@@ -10,6 +10,13 @@ upper_green = np.array([80, 255, 255])
 # Capture video from the default camera
 cap = cv2.VideoCapture(0)
 
+# Get the default camera resolution
+frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+# reference pont to compare it against
+reference_point = (frame_width // 2, frame_height // 2)
+
 while True:
     # Capture a frame
     ret, frame = cap.read()
@@ -26,13 +33,6 @@ while True:
     # Find contours in the mask
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
-    # Get the default camera resolution
-    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-    # reference pont to compare it against
-    reference_point = (frame_width // 2, frame_height // 2)
-
     # If contours are found, track the largest one
     if contours:
         largest_contour = max(contours, key=cv2.contourArea)
