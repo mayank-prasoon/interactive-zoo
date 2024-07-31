@@ -9,19 +9,21 @@ lower_green = np.array([40, 40, 40])
 upper_green = np.array([80, 255, 255])
 
 # Capture video from the default camera
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 # Get the default camera resolution
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
 # # reference pont to compare it against
-# reference_point = (frame_width // 2, frame_height // 2)
+reference_point = (frame_width // 2, frame_height // 2)
 
 # animal_locs = animal.animal_locs
 
 mixer.init()
-mixer.Sound()
+animal_sound = mixer.Channel('assets/manoeuvre.ogg')
+animal_sound.play()
+
 
 while True:
     # Capture a frame
@@ -62,21 +64,24 @@ while True:
             # Draw the center of the contour
             cv2.circle(frame, (center_x, center_y), 5, (0, 255, 0), -1)
             
-            # for point in animal_locs:
+            # Calculate the distance from the reference point to the center of the contour
+            distance = math.sqrt((center_x - reference_point[0]) ** 2 + (center_y - reference_point[1]) ** 2)
+            
+            max_distance = 50
+            volume       = max(0, min(1, 1-(distance/max_distance)))
+            animal_sound.set_volume(volume)
 
-            #     distance = math.sqrt((center_x - point[0]) ** 2 + (center_y - point[1]) ** 2)
-                
-            #     # Print the coordinates of the center and the distance
-            #     print(f"Reference Point: {point}, Center: ({center_x}, {center_y}), Distance: {distance:.2f}")
-                
-            #     # Draw the distance on the frame
-            #     cv2.putText(frame, f"Dist: {distance:.2f}", (center_x, center_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+            # Print the coordinates of the center and the distance
+            print(f"Center: ({center_x}, {center_y}), Distance: {distance:.2f}")
+            
+            # Draw the distance on the frame
+            cv2.putText(frame, f"Dist: {distance:.2f}", (center_x, center_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
         
         # Draw a rectangle around the largest contour
         (x, y, w, h) = cv2.boundingRect(largest_contour)
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
         
-        # cv2.circle(frame, reference_point, 5, (0, 0, 255), -1)
+        cv2.circle(frame, reference_point, 5, (0, 0, 255), -1)
 
         # Print the coordinates of the center
         # print(f"Center: ({center_x}, {center_y})")
