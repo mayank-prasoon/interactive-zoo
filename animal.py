@@ -1,5 +1,3 @@
-import math
-
 # animal name   = (location, audio file, max length)
 entry_crows     = ((100, 100), 'assets/manoeuvre.ogg', 100)
 blue_bird       = ((150, 100), 'assets/battle_theme_regular.mp3', 100)
