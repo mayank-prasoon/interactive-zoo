@@ -1,8 +1,9 @@
 import cv2
 import numpy as np
 import math
-# import animal
+import animal
 from pygame import mixer
+
 # Define the range of the color you want to track in HSV
 # Here, we define the range for the color green
 lower_green = np.array([40, 40, 40])
@@ -16,19 +17,26 @@ frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
 # # reference pont to compare it against
-reference_point = (frame_width // 2, frame_height // 2)
+# reference_point = (frame_width // 2, frame_height // 2)
 
-# animal_locs = animal.animal_locs
+# animal location
+animal_locs = animal.animal_locs
 
+# create mixer channel 
 mixer.init()
-animal_sound = mixer.Channel('assets/manoeuvre.ogg')
-animal_sound.play()
+mixer.set_num_channels(13)
+
+# loop though and assign channel with the respective code base 
+for idx, animal in enumerate(animal_locs):
+    mixer.Channel(idx).play(mixer.Sound(animal[1]))
+    mixer.Channel(idx).set_volume(0.0)
+    print(animal)
 
 
 while True:
     # Capture a frame
     ret, frame = cap.read()
-    
+
     if not ret:
         break
     
@@ -49,7 +57,7 @@ while True:
         # Draw a rectangle around the largest contour
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-            # If contours are found, track the largest one
+    # If contours are found, track the largest one
     if contours:
         largest_contour = max(contours, key=cv2.contourArea)
         
@@ -64,29 +72,21 @@ while True:
             # Draw the center of the contour
             cv2.circle(frame, (center_x, center_y), 5, (0, 255, 0), -1)
             
-            # Calculate the distance from the reference point to the center of the contour
-            distance = math.sqrt((center_x - reference_point[0]) ** 2 + (center_y - reference_point[1]) ** 2)
-            
-            max_distance = 50
-            volume       = max(0, min(1, 1-(distance/max_distance)))
-            animal_sound.set_volume(volume)
+            # loop though the array to find the 
+            for idx, animal in enumerate(animal_locs):
+                max_distance = animal[2] # each animal have a different maximum length
+                cv2.circle(frame, animal[0], 5, (0, 0, 255), -1) # draw a circle around the point
 
-            # Print the coordinates of the center and the distance
-            print(f"Center: ({center_x}, {center_y}), Distance: {distance:.2f}")
-            
-            # Draw the distance on the frame
-            cv2.putText(frame, f"Dist: {distance:.2f}", (center_x, center_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                # calculate the distance and based on the distance calculate the volume
+                distance = math.sqrt((center_x - animal[0][0]) ** 2 + (center_y - animal[0][1]) ** 2)
+                volume   = max(0, min(1, 1-(distance/max_distance))) # check for the min value 
+                mixer.Channel(idx).set_volume(volume)
         
         # Draw a rectangle around the largest contour
         (x, y, w, h) = cv2.boundingRect(largest_contour)
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        
-        cv2.circle(frame, reference_point, 5, (0, 0, 255), -1)
 
-        # Print the coordinates of the center
-        # print(f"Center: ({center_x}, {center_y})")
-        
-
+    frame = np.fliplr(frame)
     # Display the frame
     cv2.imshow('Frame', frame)
     cv2.imshow('Mask', mask)
