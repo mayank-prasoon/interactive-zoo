@@ -16,6 +16,7 @@ cap = cv2.VideoCapture(0)
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
+# print(frame_width, frame_height)
 # # reference pont to compare it against
 # reference_point = (frame_width // 2, frame_height // 2)
 
@@ -28,7 +29,11 @@ mixer.set_num_channels(13)
 
 # loop though and assign channel with the respective code base 
 for idx, animal in enumerate(animal_locs):
-    mixer.Channel(idx).play(mixer.Sound(animal[1]))
+    if animal[1]:
+        mixer.Channel(idx).play(mixer.Sound(animal[1]))
+    else:
+        mixer.Channel(idx).play(mixer.Sound('assets/battle_theme_regular.mp3'))
+
     mixer.Channel(idx).set_volume(0.0)
     print(animal)
 
@@ -86,7 +91,7 @@ while True:
         (x, y, w, h) = cv2.boundingRect(largest_contour)
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-    frame = np.fliplr(frame)
+    # frame = np.fliplr(frame)
     # Display the frame
     cv2.imshow('Frame', frame)
     cv2.imshow('Mask', mask)
